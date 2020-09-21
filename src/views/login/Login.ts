@@ -19,13 +19,13 @@ export interface RulesItem {
 }
 
 export interface Rules {
-  username: RulesItem[],
-  password: RulesItem[],
-  mobile: RulesItem[],
-  verification: RulesItem[],
-  nickname: RulesItem[],
-  checkPass: RulesItem[],
-  passWords: RulesItem[],
+  username?: RulesItem[],
+  password?: RulesItem[],
+  mobile?: RulesItem[],
+  verification?: RulesItem[],
+  nickname?: RulesItem[],
+  checkPass?: RulesItem[],
+  passWords?: RulesItem[],
 }
 
 export interface ResItem {

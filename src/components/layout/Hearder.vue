@@ -72,7 +72,9 @@ export default {
       router.push("/user/personal");
     };
     const out = (): void => {
-      (store.state.users = null), localStorage.removeItem("user");
+      store.state.users = null;
+      localStorage.removeItem("user");
+      localStorage.removeItem("token");
     };
     const users: ComputedRef<User> = computed(() => store.state.users);
     return {

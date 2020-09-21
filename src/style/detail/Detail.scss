@@ -2,6 +2,8 @@
   padding: 20px 0;
   width: 1000px;
   margin: 0 17%;
+  display: flex;
+  justify-content: space-between;
 }
 
 .content_left {
@@ -126,4 +128,34 @@ h1 {
 .tree {
   background: rgb(249,249,249);
   border: 1px solid #ddd;
+}
+.content_right {
+  width: 280px;
+}
+.recommend {
+  color: #000000;
+  font-size: 18px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #ddd;
+}
+.recommend_item{
+  padding: 20px 0;
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid #ddd;
+}
+.recom_images {
+  width: 100px;
+  height: 80px;
+}
+.post-text {
+  width: 170px;
+  height: 80px;
+}
+.time {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  color: #999999;
+  font-size: 12px;
 }

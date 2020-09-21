@@ -3,7 +3,7 @@
     <div class="content_left">
       <!-- 面包屑 -->
       <div class="breadcrumb">
-        <span class="fwei blue hover">旅游攻略</span>
+        <span class="fwei blue hover" @click="travel">旅游攻略</span>
         <span class="padd-lrs fwei" style="color:#c0c4cc">/</span>
         <span style="color:#606266">攻略详情</span>
       </div>
@@ -23,7 +23,7 @@
               <FormOutlined class="icon" />
               <div class="icon_name">评论({{total}})</div>
             </div>
-            <div class="f-dir-mid">
+            <div class="f-dir-mid" @click="share">
               <ShareAltOutlined class="icon" />
               <div class="icon_name">分享</div>
             </div>
@@ -144,7 +144,24 @@
         </div>
       </div>
     </div>
-    <div></div>
+    <div class="content_right">
+      <div class="recommend">相关攻略</div>
+      <div
+        v-for="item in recommend"
+        :key="item.id"
+        class="recommend_item hover"
+        @click="recommendPost(item.id)"
+      >
+        <img :src="item.images[0]" alt class="recom_images" />
+        <div class="pos-re post-text">
+          <div>{{item.title}}</div>
+          <div class="time">
+            <span class="padd-r">{{item.createdAt}}</span>
+            <span>阅读 {{item.watch}}</span>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -156,11 +173,12 @@ import {
   SetupContext,
   onMounted,
 } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import api from "@/http/api";
 import dayjs from "dayjs";
 import { PlusOutlined } from "@ant-design/icons-vue";
 import myTree from "@/components/comment/MyTree.vue";
+import { message } from "ant-design-vue";
 
 function getBase64(file: any) {
   return new Promise((resolve, reject) => {
@@ -187,6 +205,7 @@ interface Data {
   comment: any;
   total: number;
   header: HeaderItem;
+  recommend: any[];
 }
 export default defineComponent({
   name: "",
@@ -209,28 +228,26 @@ export default defineComponent({
       header: {
         Authorization: "",
       },
+      recommend: [],
     });
     const route = useRoute();
-    const handleCancel = (): void => {
-      data.previewVisible = false;
+    const router = useRouter();
+    // 获取文章详情
+    const getPostDetail = (id: number): void => {
+      api
+        .getPostsDetail({ id: Number(id) })
+        .then((res: any) => {
+          res.data.map((item: any) => {
+            data.createdAt = item.created_at;
+            data.createdAt = dayjs(data.createdAt).format("YYYY-MM-DD HH:mm");
+          });
+          data.detail = res.data;
+        })
+        .catch((err) => {
+          console.log(err);
+        });
     };
-    const handlePreview = (file: any) => {
-      console.log(file);
-    };
-    const handleChange = (a: any,b: any,c: any): void => {
-      // data.fileList = fileList;
-      console.log(a, b,c);
-    };
-    // 改变页码
-    const changeSize = (page: number, pageSize: number): void => {
-      console.log(page);
-      console.log(pageSize);
-    };
-    // 改变页面条数
-    const showSizeChange = (current: number, size: number): void => {
-      console.log(current);
-      console.log(size);
-    };
+    // 获取评论
     const getComment = (id: string): void => {
       api
         .getComments({
@@ -251,18 +268,53 @@ export default defineComponent({
           console.log(err);
         });
     };
+    const handleCancel = (): void => {
+      data.previewVisible = false;
+    };
+    const handlePreview = (file: any) => {
+      console.log(file);
+    };
+    const handleChange = (a: any, b: any, c: any): void => {
+      // data.fileList = fileList;
+      console.log(a, b, c);
+    };
+    // 返回旅游攻略
+    const travel = (): void => {
+      router.push("/travel")
+    };
+    // 分享
+    const share = (): void => {
+      message.warning('暂不支持该功能！')
+    };
+    // 改变页码
+    const changeSize = (page: number, pageSize: number): void => {
+      console.log(page);
+      console.log(pageSize);
+    };
+    // 改变页面条数
+    const showSizeChange = (current: number, size: number): void => {
+      console.log(current);
+      console.log(size);
+    };
+    // 点击相关推荐
+    const recommendPost = (id: number): void => {
+      getPostDetail(id);
+    };
     onMounted(() => {
       data.header.Authorization = "Bearer " + localStorage.getItem("token");
       const id: string = route.query.id! as string;
       getComment(id);
+      getPostDetail(Number(id));
       api
-        .getPostsDetail({ id: Number(id) })
+        .recommend(Number(id))
         .then((res: any) => {
+          console.log(res);
           res.data.map((item: any) => {
-            data.createdAt = item.created_at;
-            data.createdAt = dayjs(data.createdAt).format("YYYY-MM-DD HH:mm");
+            const createdAt = item.created_at;
+            item.createdAt = dayjs(item.created_at).format("YYYY-MM-DD HH:mm");
           });
-          data.detail = res.data;
+          data.recommend = res.data;
+          console.log(data.recommend);
         })
         .catch((err) => {
           console.log(err);
@@ -275,6 +327,8 @@ export default defineComponent({
       handlePreview,
       changeSize,
       showSizeChange,
+      travel,
+      share,
     };
   },
 });
