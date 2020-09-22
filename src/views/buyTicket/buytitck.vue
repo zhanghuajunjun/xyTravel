@@ -6,9 +6,16 @@
         <div class="biao">乘机人</div>
         <!-- 乘机人 -->
         <div class="biao_b">
-          <a-form :model="form1" class="biao_d pos-re" action v-for="(item,index) in arr" :key="index">
-            <a-form-item :label="item.username">
-              <a-input v-model:value="form1.name" placeholder="姓名" class="username" />
+          <a-form
+            :model="item"
+            class="biao_d pos-re"
+            action
+            v-for="(item,index) in arr"
+            :key="index"
+            
+          >
+            <a-form-item :label="item.passenger">
+              <a-input v-model:value="item.username" placeholder="姓名" class="username" />
             </a-form-item>
             <a-form-item :label="item.cdcared">
               <div class="d-flex">
@@ -16,10 +23,10 @@
                   <a-select-option value="护照">护照</a-select-option>
                   <a-select-option value="身份证">身份证</a-select-option>
                 </a-select>
-                <a-input placeholder="证件号码" default-value v-model:value="form1.cdnumber" />
+                <a-input placeholder="证件号码" default-value v-model:value="item.id" />
               </div>
             </a-form-item>
-            <MinusCircleFilled class="delect hover" v-if="index>0" @click="del(index)"/>
+            <MinusCircleFilled class="delect hover" v-if="index>0" @click="del(index)" />
           </a-form>
           <div class="biao_c">
             <a-button type="primary" @click="addpassenger">添加乘客</a-button>
@@ -106,9 +113,13 @@
           <span>应付总额：</span>
           <span
             class="buy_l"
-            v-if="checked1 === true || checked2 === true"
-          >￥{{(obj.settle_price_coupon+80)*arr.length}}.00</span>
-          <span class="buy_l" v-else>￥{{(obj.settle_price_coupon+50)*arr.length}}.00</span>
+            v-if="checked1 === true && checked2 === true"
+          >￥{{(obj.settle_price_coupon+110)*arr.length}}.00</span>
+          <span
+            class="buy_l"
+            v-else-if="checked1 === false && checked2 === false"
+          >￥{{(obj.settle_price_coupon+50)*arr.length}}.00</span>
+          <span class="buy_l" v-else>￥{{(obj.settle_price_coupon+80)*arr.length}}.00</span>
         </div>
       </div>
     </div>
@@ -138,6 +149,8 @@ interface Form1Item {
   cdnumber?: string;
   cdcared?: string;
   username?: string;
+  id?: string;
+  passenger?: string;
 }
 interface Data {
   obj: any;
@@ -145,7 +158,6 @@ interface Data {
   otaId: number;
   list: object;
   form: FormItem;
-  form1: Form1Item;
   arr: Form1Item[];
   rules: Rules;
   codes: string;
@@ -155,6 +167,8 @@ interface Data {
   token: string;
   checked1: boolean;
   checked2: boolean;
+  users: Form1Item;
+  ars: number[];
 }
 export default defineComponent({
   name: "",
@@ -163,6 +177,7 @@ export default defineComponent({
   setup(props, ctx: SetupContext) {
     const data: Data = reactive<Data>({
       obj: [],
+      ars: [],
       seatXid: "",
       otaId: 1,
       list: {},
@@ -173,17 +188,21 @@ export default defineComponent({
       token: "",
       checked1: false,
       checked2: false,
-      arr: [{ cdcared: "证件类型", username: "乘车人" }],
-      form1: {
-        name: "",
-        cdnumber: "",
-      },
+      arr: [{ cdcared: "证件类型", passenger: "乘机人", id: "", username: "" }],
+      users: {},
       form: {
         username: "",
         mobile: "",
         verification: "",
       },
       rules: {
+        cdcared: [
+          {
+            pattern:  /^[1-9]\d{5}(?:18|19|20)\d{2}(?:0[1-9]|10|11|12)(?:0[1-9]|[1-2]\d|30|31)\d{3}[\dXx]$/,
+            message: "身份证格式不正确",
+            trigger: "change",
+          },
+        ],
         username: [
           {
             required: true,
@@ -238,7 +257,7 @@ export default defineComponent({
           data.content = data.totalTime + "s后重新发送";
           if (data.totalTime < 0) {
             window.clearInterval(clock);
-            data.content = "重新发送验证码";
+            data.content = "重新发送";
             data.totalTime = 60;
             data.canClick = true; //这里重新开启
           }
@@ -259,24 +278,33 @@ export default defineComponent({
         message.error("手机号不能为空");
       }
     };
+    // 添加乘机人
     const addpassenger = (): void => {
-      const obj = { cdcared: "证件类型", username: "乘车人" }
-      data.arr.push(obj)
+      const obj = {
+        cdcared: "证件类型",
+        passenger: "乘机人",
+        id: "",
+        username: "",
+      };
+      data.arr.push(obj);
     };
+    // 删除乘机人
     const del = (index: number): void => {
-      console.log(index);
-      data.arr.splice(index,1)
+      data.arr.splice(index, 1);
     };
+    // 买保险1
     const onChange1 = (e: any): void => {
       data.checked1 = e.target.checked;
     };
+    // 买保险2
     const onChange2 = (e: any): void => {
       data.checked2 = e.target.checked;
     };
+    // 提交订单
     const order = (): void => {
       if (
-        data.form1.name == "" ||
-        data.form1.cdnumber == "" ||
+        data.arr[0].username == "" ||
+        data.arr[0].id == "" ||
         data.form.username == "" ||
         data.form.mobile == "" ||
         data.form.verification == ""
@@ -287,20 +315,44 @@ export default defineComponent({
           message.warning("系统检测到你未登录，请先登录");
           router.push("/user/login");
         } else {
+          const ass: Form1Item[] = [];
+          data.arr.map((item: Form1Item) => {
+            const obj: Form1Item = {
+              username: "",
+              id: "",
+            };
+            obj.username = item.username;
+            obj.id = item.id;
+            ass.push(obj);
+          });
+          if (data.checked1 === true && data.checked2 === true) {
+            data.ars = [1, 2];
+          } else if (data.checked1 === true) {
+            data.ars = [1];
+          } else if (data.checked2 === true) {
+            data.ars = [2];
+          } else {
+            data.ars = [];
+          }
           api
             .airorders({
-              users: [],
-              insurances: ["1"],
+              users: ass,
+              captcha: data.codes,
+              insurances: data.ars,
               contactName: data.form.username,
               contactPhone: data.form.mobile,
               invoice: false,
-              seatXid: data.seatXid,
+              seat_xid: data.seatXid,
               air: data.otaId,
             })
             .then((res: any) => {
               console.log(res);
               if (res.status == 0) {
                 message.success(res.message);
+                router.push({
+                  path: "/settlement",
+                  query: { id: res.data.id },
+                });
               } else {
                 message.error(res.message);
               }
@@ -316,6 +368,7 @@ export default defineComponent({
       if (route.params.buyair) {
         data.obj = JSON.parse(route.params.buyair! as string);
         data.seatXid = data.obj.seat_xid;
+        data.otaId = Number(route.params.id! as string);
       }
       //推荐机票
       api
@@ -346,6 +399,9 @@ export default defineComponent({
             res.durationMinutes = Math.floor(durationSeconds / 60) + 60;
           }
           data.list = res;
+        })
+        .catch((err) => {
+          console.log(err);
         });
     });
     return {
@@ -404,7 +460,7 @@ export default defineComponent({
 }
 .sendMsg {
   color: #909399;
-  width: 105px;
+  width: 120px;
   height: 40px;
   background: #eee;
   border-top-right-radius: 5px;
@@ -417,7 +473,7 @@ export default defineComponent({
   width: 150px;
 }
 .ai_input {
-  width: 255px;
+  width: 270px;
   height: 40px;
 }
 .submit {

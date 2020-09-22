@@ -9,11 +9,13 @@
   },
   "dependencies": {
     "@types/nprogress": "^0.2.0",
+    "@types/qrcode": "^1.3.5",
     "ant-design-vue": "^2.0.0-beta.9",
     "axios": "^0.20.0",
     "core-js": "^3.6.5",
     "dayjs": "^1.8.35",
     "nprogress": "^0.2.0",
+    "qrcode": "^1.4.4",
     "vue": "^3.0.0-0",
     "vue-router": "^4.0.0-0",
     "vuex": "^4.0.0-0"

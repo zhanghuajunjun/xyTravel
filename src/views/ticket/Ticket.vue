@@ -97,7 +97,7 @@
     <div class="paddes flex-j-sb air-sale">
       <div v-for="item in specialTicket" :key="item.id">
         <div class="pos-re hover" @click="chooseAir(item)">
-          <img :src="item.cover" alt class="specialImg" />
+          <img :src="specialTicket[0].cover" alt class="specialImg" />
           <div class="layer-bar flex-j-sa">
             <span>{{item.departCity}}-{{item.destCity}}</span>
             <span>￥{{item.price}}</span>

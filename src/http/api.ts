@@ -1,6 +1,6 @@
 import service from './index'
-const token = sessionStorage.getItem('token')
-
+const token = localStorage.getItem('token')!
+console.log(token);
 export default {
   // 获取轮播图
   getBanners() {
@@ -61,9 +61,26 @@ export default {
     return service.get(`airs/${id}?seat_xid=${seatXid}`)
   },
   // 提交机票订单
-  airorders({ users, insurances, contactName, contactPhone, invoice, seatXid, air }: { users: any; insurances: any; contactName: string; contactPhone: string; invoice: boolean; seatXid: string; air: number }) {
-    return service.post("/airorders", { users, insurances, contactName, contactPhone, invoice, seatXid, air },{
-      headers:{
+  airorders({ users, insurances, contactName, contactPhone, invoice, seat_xid, air, captcha }: { users: any; insurances: any; contactName: string; contactPhone: string; invoice: boolean; seat_xid: string; air: number; captcha: string }) {
+    return service.post("/airorders", { users, insurances, contactName, contactPhone, invoice, seat_xid, air, captcha }
+      , {
+        headers: {
+          Authorization: "Bearer " + token
+        }
+      })
+  },
+  // 订单详情
+  airorderDetail(id: number) {
+    return service.get(`/airorders/${id}`, {
+      headers: {
+        Authorization: "Bearer " + token
+      }
+    })
+  },
+  // 支付状态
+  checkpay({ id, nonce_str, out_trade_no }: { id: number; nonce_str: number; out_trade_no: number }) {
+    return service.post('/airorders/checkpay', { id, nonce_str, out_trade_no }, {
+      headers: {
         Authorization: "Bearer " + token
       }
     })

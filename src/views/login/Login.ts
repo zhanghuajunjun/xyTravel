@@ -26,6 +26,7 @@ export interface Rules {
   nickname?: RulesItem[],
   checkPass?: RulesItem[],
   passWords?: RulesItem[],
+  cdcared?: RulesItem[],
 }
 
 export interface ResItem {
