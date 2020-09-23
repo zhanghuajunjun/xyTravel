@@ -26,6 +26,9 @@ export default {
   getPosts() {
     return service.get(`posts`)
   },
+  getpost(city: number|string) {
+    return service.get(`posts?city=${city}`)
+  },
   // 文章详情
   getPostsDetail({ id }: { id: number }) {
     return service.get(`posts?id=${id}`)
@@ -38,6 +41,19 @@ export default {
   postsComments({ content, pics, post, follow }: { content: string; pics: any; post: number; follow: number }) {
     return service.post(`comments`, {
       content, pics, post, follow
+    }, {
+      headers: {
+        Authorization: "Bearer " + token
+      }
+    })
+  },
+  postComment({ content, pics, post }: { content: string; pics: any; post: number }) {
+    return service.post(`comments`, {
+      content, pics, post
+    }, {
+      headers: {
+        Authorization: "Bearer " + token
+      }
     })
   },
   // 推荐文章
@@ -84,5 +100,25 @@ export default {
         Authorization: "Bearer " + token
       }
     })
-  }
+  },
+  // 获取城市
+  getcities({ name }: { name: string, }) {
+    return service.get(`/cities?name=${name}`)
+  },
+  // 获取酒店
+  gethotel({ city, id, price_in, scenic, name_contains, hotellevel, hoteltype, hotelbrand, hotelasset, enterTime, person, _sort, _limit, _start }: {
+    city: number, id?: number | undefined, scenic?: number | undefined, name_contains?: string | undefined, price_in?: number | undefined, hotellevel?: number | undefined, hoteltype?: number | undefined, hotelbrand?: number | undefined, hotelasset?: number | undefined, enterTime?: any, person?: number | undefined, _sort?: string | undefined, _limit?: number | undefined, _start?: number | undefined
+  }) {
+    return service.get(`/hotels?city=${city}&id=${id}&price_in=${price_in}&scenic=${scenic}&name_contains=${name_contains}&hotellevel=${hotellevel}&hoteltype=${hoteltype}&hotelbrand=${hotelbrand}&hotelasset=${hotelasset}&enterTime=${enterTime}&person=${person}&_sort=${_sort}&_limit=${_limit}&_start=${_start}`)
+  },
+  // 获取酒店
+  getHotel({ city }: {
+    city: number,
+  }) {
+    return service.get(`/hotels?city=${city}`)
+  },
+  // 获取酒店详情
+  getoptions() {
+    return service.get('hotels/options')
+  },
 }

@@ -10,7 +10,7 @@
           v-for="(item,index) in arr"
           :key="index"
           @click="navItem(index)"
-          :class="currenIndex == index?'active':'hvr-underline-from-center blue'"
+          :class="currenIndexs == index?'active':'hvr-underline-from-center blue'"
         >{{item}}</div>
       </div>
     </div>
@@ -28,7 +28,6 @@
         </div>
       </a-popover>
     </div>
-
     <div class="hover blue login" @click="toLogin" v-else>登录/注册</div>
   </div>
 </template>
@@ -47,13 +46,14 @@ export default {
   setup() {
     const data: Data = reactive<Data>({
       arr: ["首页", "旅游攻略", "酒店", "国内机票"],
-      currenIndex: 0,
+      currenIndex: 1,
     });
     const router = useRouter();
     const route = useRoute();
     const store = useStore();
     const navItem = (index: number) => {
-      data.currenIndex = index;
+      store.commit("setIndex", index);
+      localStorage.setItem('index',String(index))
       if (index === 0) {
         router.push("/");
       } else if (index === 1) {
@@ -77,6 +77,7 @@ export default {
       localStorage.removeItem("token");
     };
     const users: ComputedRef<User> = computed(() => store.state.users);
+    const currenIndexs: ComputedRef<number> = computed(() => store.state.currenIndex)
     return {
       ...toRefs(data),
       navItem,
@@ -84,6 +85,7 @@ export default {
       users,
       personal,
       out,
+      currenIndexs,
     };
   },
 };

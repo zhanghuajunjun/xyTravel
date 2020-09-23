@@ -1,5 +1,5 @@
 <template>
-  <div data-v-edb404ec class="container">
+  <div class="container">
     <div data-v-edb404ec class="main">
       <div data-v-edb404ec class="pay-title">
         支付总金额
@@ -42,6 +42,7 @@ import {
 import api from "@/http/api";
 import { useRoute } from "vue-router";
 import QRCode from "qrcode";
+import { message, Modal } from "ant-design-vue";
 interface Data {
   imgUrl: string;
   price: string;
@@ -56,20 +57,6 @@ export default defineComponent({
       price: "",
     });
     const route = useRoute();
-    const checkpay = (
-      id: number,
-      nonce_str: number,
-      out_trade_no: number
-    ): void => {
-      api
-        .checkpay({ id: id, nonce_str: nonce_str, out_trade_no: out_trade_no })
-        .then((res) => {
-          console.log(res);
-        })
-        .catch((err) => {
-          console.log(err);
-        });
-    };
     onMounted(() => {
       const id = Number(route.query.id! as string);
       api
@@ -80,10 +67,29 @@ export default defineComponent({
           QRCode.toDataURL(res.payInfo.code_url).then((res: string) => {
             data.imgUrl = res;
           });
-          // setInterval(
-          //   "checkpay(Number(res.id),Number(res.price),res.orderNo)",
-          //   5000
-          // );
+          const myInterval = setInterval(() => {
+            api
+              .checkpay({
+                id: Number(res.id),
+                nonce_str: Number(res.price),
+                out_trade_no: res.orderNo,
+              })
+              .then((res: any) => {
+                console.log(res);
+                if (res.trade_state === "SUCCESS") {
+                  clearInterval(myInterval);
+                  Modal.success({
+                    title: "提示",
+                    content: "支付成功，感谢0.01巨款",
+                  });
+                } else {
+                  message.warning("订单未支付，请尽快支付")
+                }
+              })
+              .catch((err) => {
+                console.log(err);
+              });
+          }, 5000);
         })
         .catch((err) => {
           console.log(err);
@@ -91,18 +97,18 @@ export default defineComponent({
     });
     return {
       ...toRefs(data),
-      checkpay
     };
   },
 });
 </script>
 
 <style scoped lang='scss'>
-.container[data-v-edb404ec] {
+.container {
   background: #f5f5f5;
   width: 100%;
   height: 100%;
   padding: 30px 0;
+  margin: 0;
 }
 .main[data-v-edb404ec] {
   width: 1000px;

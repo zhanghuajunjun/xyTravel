@@ -109,7 +109,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted, reactive, toRefs } from "vue";
+import { defineComponent, onMounted, reactive, render, toRefs } from "vue";
 import { message } from "ant-design-vue";
 import api from "@/http/api";
 import { useRouter } from "vue-router";
@@ -140,22 +140,22 @@ export default {
         departCode: "",
         departDate: "",
         destCity: "",
-        destCode:"",
+        destCode: "",
       },
       departDate: "",
       disabledDate(current: any) {
-        return current < moment().endOf("day");
+        return current && current <= moment().subtract("day",1);
       },
     });
     const router = useRouter();
     const handleSearch1 = (value: string): void => {
-      data.value1 = value
+      data.value1 = value;
       api
         .citySort(value)
         .then((res: any) => {
           res.data.map((item: any) => {
-            item.sortName = item.sort+"-"+item.name
-          })
+            item.sortName = item.sort + "-" + item.name;
+          });
           data.data1 = res.data;
         })
         .catch((err) => {
@@ -164,16 +164,19 @@ export default {
     };
     const handleChange1 = (value: any): void => {
       data.obj.departCode = value.substring(0, value.indexOf("-"));
-      data.obj.departCity = value.substring(value.indexOf("-") + 1, value.length-1);
+      data.obj.departCity = value.substring(
+        value.indexOf("-") + 1,
+        value.length - 1
+      );
     };
     const handleSearch2 = (value: string): void => {
-      data.value2 = value
+      data.value2 = value;
       api
         .citySort(value)
         .then((res: any) => {
           res.data.map((item: any) => {
-            item.sortName = item.sort+"-"+item.name
-          })
+            item.sortName = item.sort + "-" + item.name;
+          });
           data.data2 = res.data;
         })
         .catch((err) => {
@@ -182,7 +185,10 @@ export default {
     };
     const handleChange2 = (value: any): void => {
       data.obj.destCode = value.substring(0, value.indexOf("-"));
-      data.obj.destCity = value.substring(value.indexOf("-") + 1, value.length-1);
+      data.obj.destCity = value.substring(
+        value.indexOf("-") + 1,
+        value.length - 1
+      );
     };
     const onChangeDate = (value: string): void => {
       data.obj.departDate = dayjs(value).format("YYYY-MM-DD");
@@ -208,6 +214,23 @@ export default {
           name: "ChooseAir",
           params: { plane: JSON.stringify(data.obj) },
         });
+        if (localStorage.getItem("history")) {
+          const arr = JSON.parse(localStorage.getItem("history")!);
+          const ass = arr.map((item: any) => {
+            return (
+              item.departCity == data.obj.departCity &&
+              item.departDate == data.obj.departDate &&
+              item.destCity == data.obj.destCity
+            );
+          });
+          if(ass.length === 0) {
+            arr.push(data.obj);
+          }
+        } else {
+          const arr = [];
+          arr.push(data.obj);
+          localStorage.setItem("history", JSON.stringify(arr));
+        }
       }
     };
     const chooseAir = (item: any): void => {

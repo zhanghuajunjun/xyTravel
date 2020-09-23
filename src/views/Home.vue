@@ -29,9 +29,9 @@
           </div>
         </div>
         <div class="search-input d-flex">
-          <input :placeholder="placeholder" v-model="value" />
+          <input :placeholder="placeholder" v-model="value" @keydown.enter="search"/>
           <div class="flex-cent" style="width:40px">
-            <SearchOutlined class="searchIcon" />
+            <SearchOutlined class="searchIcon" @click="search"/>
           </div>
         </div>
       </div>
@@ -41,7 +41,7 @@
 
 <script lang='ts'>
 import { LeftCircleOutlined, RightCircleOutlined } from "@ant-design/icons-vue";
-import { useRoute } from "vue-router";
+import { useRouter } from "vue-router";
 import {
   defineComponent,
   reactive,
@@ -50,6 +50,7 @@ import {
   onMounted,
 } from "vue";
 import api from "../http/api";
+import { useStore } from "vuex";
 import { Res, ResItem, User } from "@/types/home.ts";
 interface Data {
   banners: ResItem[];
@@ -71,9 +72,12 @@ export default defineComponent({
       placeholder: "搜索城市",
       value: "",
     });
+    const store = useStore();
+    const router = useRouter();
     // 点击攻略
     const strategy = (): void => {
       data.activeIndex = 0;
+      data.placeholder = "搜索城市";
     };
     // 点击酒店
     const hotel = (): void => {
@@ -83,8 +87,31 @@ export default defineComponent({
     // 点击机票
     const ticket = (): void => {
       data.activeIndex = 2;
+      const currenIndex = 3
+      store.commit("setIndex", currenIndex);
+      localStorage.setItem('index',String(currenIndex))
+      router.push("/ticket")
     };
-    const route = useRoute();
+    // 点击酒店搜索
+    const search = (): void => {
+      if(data.activeIndex === 1) {
+        const currenIndex = 2
+        store.commit("setIndex", currenIndex);
+        localStorage.setItem('index',String(currenIndex))
+        router.push({
+          name:"Hotel",
+          params: {msgs: data.value}
+        })
+      } else if(data.activeIndex === 0) {
+        const currenIndex = 1
+        store.commit("setIndex", currenIndex);
+        localStorage.setItem('index',String(currenIndex))
+        router.push({
+          name:"Travel",
+          params: {msgs: data.value}
+        })
+      }
+    }
     // 获取轮播图
     onMounted(() => {
       api
@@ -101,6 +128,7 @@ export default defineComponent({
       strategy,
       hotel,
       ticket,
+      search
     };
   },
 });

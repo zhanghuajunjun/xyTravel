@@ -178,6 +178,13 @@
         <!-- 历史记录 -->
         <div class="choose_h">
           <div class="choose_i">历史查询</div>
+          <div v-for="(item, index) in Ars" :key="index" class="chaxun flex-j-sb">
+            <div>
+              <div>{{ item.departCity }} - {{ item.destCity }}</div>
+              <div class="marg-topw date">{{ item.departDate }}</div>
+            </div>
+            <div class="choice flex-cent" @click="choices(item)">选择</div>
+          </div>
         </div>
       </div>
     </div>
@@ -217,6 +224,7 @@ interface Data {
   flightTime: string;
   companys: string;
   planeSizes: string;
+  Ars: string[];
 }
 export default defineComponent({
   name: "ChooseAir",
@@ -225,6 +233,7 @@ export default defineComponent({
   setup(props, ctx: SetupContext) {
     const data: Data = reactive<Data>({
       orgAirports: "",
+      Ars: [],
       flightTime: "",
       companys: "",
       planeSizes: "",
@@ -248,6 +257,7 @@ export default defineComponent({
     //使用router
     const route = useRoute();
     onMounted(() => {
+      data.Ars = JSON.parse(localStorage.getItem("history")!);
       if (route.params.plane) {
         data.obj = JSON.parse(route.params.plane! as string);
         data.departCity = data.obj.departCity;
@@ -310,6 +320,60 @@ export default defineComponent({
           data.flightss = res.flights;
         });
     });
+    const choices = (item: any): void =>{
+      api
+        .airslist({
+          departCity: item.departCity,
+          departCode: item.departCode,
+          departDate: item.departDate,
+          destCity: item.destCity,
+          destCode: item.destCode,
+        })
+        .then((res: any) => {
+          res.options.flightTimes.map((item: any) => {
+            item.section = item.from + "-" + item.to;
+          });
+          res.flights.map((item: any) => {
+            // 将起飞时间转换成Unix 时间戳 (秒)
+            const startTime = dayjs(item.dep_datetime).unix();
+            // 将到达时间转换成Unix 时间戳 (秒)
+            const endTime = dayjs(item.arr_datetime).unix();
+            const duration = endTime - startTime;
+            if (duration > 0) {
+              // 计算出小时数差
+              item.durationHour = Math.floor(duration / 60 / 60);
+              // 计算出小时数后剩余的秒钟数
+              const durationSeconds = duration % 3600;
+              // 计算分钟数
+              item.durationMinutes = Math.floor(durationSeconds / 60);
+            }
+            if (duration < 0) {
+              // 计算出小时数差
+              item.durationHour = Math.floor(duration / 60 / 60) + 24;
+              // 计算出小时数后剩余的秒钟数
+              const durationSeconds = duration % 3600;
+              // 计算分钟数
+              item.durationMinutes = Math.floor(durationSeconds / 60) + 60;
+            }
+          });
+          res.flights.map((item: any) => {
+            if (item.dep_time[0] == 0) {
+              item.depTime = item.dep_time.substring(
+                1,
+                item.dep_time.indexOf(":")
+              );
+            } else {
+              item.depTime = item.dep_time.substring(
+                0,
+                item.dep_time.indexOf(":")
+              );
+            }
+          });
+          data.list = res;
+          data.flights = res.flights;
+          data.flightss = res.flights;
+        });
+    }
     //使用router
     const router = useRouter();
     // 点击购买
@@ -329,7 +393,12 @@ export default defineComponent({
     };
     // 航空公司
     const company = (): void => {
-      if (data.flightTime !== "" && data.companys === "" && data.orgAirports ==="" && data.planeSizes === "") {
+      if (
+        data.flightTime !== "" &&
+        data.companys === "" &&
+        data.orgAirports === "" &&
+        data.planeSizes === ""
+      ) {
         data.flights = data.flightss.filter((item: any) => {
           const from = data.flightTime.substring(
             0,
@@ -344,7 +413,12 @@ export default defineComponent({
             Number(item.depTime) >= Number(from)
           );
         });
-      } else if(data.flightTime !== "" && data.companys !== "" && data.orgAirports ==="" && data.planeSizes === "") {
+      } else if (
+        data.flightTime !== "" &&
+        data.companys !== "" &&
+        data.orgAirports === "" &&
+        data.planeSizes === ""
+      ) {
         data.flights = data.flightss.filter((item: any) => {
           const from = data.flightTime.substring(
             0,
@@ -360,7 +434,12 @@ export default defineComponent({
             Number(item.depTime) >= Number(from)
           );
         });
-      } else if(data.flightTime !== "" && data.companys !== "" && data.orgAirports !=="" && data.planeSizes === "") {
+      } else if (
+        data.flightTime !== "" &&
+        data.companys !== "" &&
+        data.orgAirports !== "" &&
+        data.planeSizes === ""
+      ) {
         data.flights = data.flightss.filter((item: any) => {
           const from = data.flightTime.substring(
             0,
@@ -377,7 +456,12 @@ export default defineComponent({
             Number(item.depTime) >= Number(from)
           );
         });
-      } else if(data.flightTime !== "" && data.companys !== "" && data.orgAirports ==="" && data.planeSizes !== "") {
+      } else if (
+        data.flightTime !== "" &&
+        data.companys !== "" &&
+        data.orgAirports === "" &&
+        data.planeSizes !== ""
+      ) {
         data.flights = data.flightss.filter((item: any) => {
           const from = data.flightTime.substring(
             0,
@@ -388,13 +472,18 @@ export default defineComponent({
             data.flightTime.length
           );
           return (
-            item.plane_size == data.planeSizes && 
+            item.plane_size == data.planeSizes &&
             item.airline_name == data.companys &&
             Number(item.depTime) < Number(to) &&
             Number(item.depTime) >= Number(from)
           );
         });
-      } else if(data.flightTime !== "" && data.companys !== "" && data.orgAirports !=="" && data.planeSizes !== "") {
+      } else if (
+        data.flightTime !== "" &&
+        data.companys !== "" &&
+        data.orgAirports !== "" &&
+        data.planeSizes !== ""
+      ) {
         data.flights = data.flightss.filter((item: any) => {
           const from = data.flightTime.substring(
             0,
@@ -405,14 +494,19 @@ export default defineComponent({
             data.flightTime.length
           );
           return (
-            item.plane_size == data.planeSizes && 
+            item.plane_size == data.planeSizes &&
             item.org_airport_name == data.orgAirports &&
             item.airline_name == data.companys &&
             Number(item.depTime) < Number(to) &&
             Number(item.depTime) >= Number(from)
           );
         });
-      } else if (data.flightTime !== "" && data.companys === "" && data.orgAirports !=="" && data.planeSizes === "") {
+      } else if (
+        data.flightTime !== "" &&
+        data.companys === "" &&
+        data.orgAirports !== "" &&
+        data.planeSizes === ""
+      ) {
         data.flights = data.flightss.filter((item: any) => {
           const from = data.flightTime.substring(
             0,
@@ -429,8 +523,13 @@ export default defineComponent({
             Number(item.depTime) >= Number(from)
           );
         });
-      } else if(data.flightTime !== "" && data.companys === "" && data.orgAirports !=="" && data.planeSizes !== ""){
-         data.flights = data.flightss.filter((item: any) => {
+      } else if (
+        data.flightTime !== "" &&
+        data.companys === "" &&
+        data.orgAirports !== "" &&
+        data.planeSizes !== ""
+      ) {
+        data.flights = data.flightss.filter((item: any) => {
           const from = data.flightTime.substring(
             0,
             data.flightTime.indexOf("-")
@@ -440,13 +539,18 @@ export default defineComponent({
             data.flightTime.length
           );
           return (
-            item.plane_size == data.planeSizes && 
+            item.plane_size == data.planeSizes &&
             item.org_airport_name == data.orgAirports &&
             Number(item.depTime) < Number(to) &&
             Number(item.depTime) >= Number(from)
           );
         });
-      } else if(data.flightTime !== "" && data.companys === "" && data.orgAirports ==="" && data.planeSizes !== "") {
+      } else if (
+        data.flightTime !== "" &&
+        data.companys === "" &&
+        data.orgAirports === "" &&
+        data.planeSizes !== ""
+      ) {
         data.flights = data.flightss.filter((item: any) => {
           const from = data.flightTime.substring(
             0,
@@ -457,57 +561,86 @@ export default defineComponent({
             data.flightTime.length
           );
           return (
-            item.plane_size == data.planeSizes && 
+            item.plane_size == data.planeSizes &&
             Number(item.depTime) < Number(to) &&
             Number(item.depTime) >= Number(from)
           );
         });
-      } else if(data.flightTime === "" && data.companys !== "" && data.orgAirports ==="" && data.planeSizes === "") {
+      } else if (
+        data.flightTime === "" &&
+        data.companys !== "" &&
+        data.orgAirports === "" &&
+        data.planeSizes === ""
+      ) {
+        data.flights = data.flightss.filter((item: any) => {
+          return item.airline_name == data.companys;
+        });
+      } else if (
+        data.flightTime === "" &&
+        data.companys !== "" &&
+        data.orgAirports !== "" &&
+        data.planeSizes === ""
+      ) {
         data.flights = data.flightss.filter((item: any) => {
           return (
+            item.org_airport_name == data.orgAirports &&
             item.airline_name == data.companys
           );
         });
-      } else if(data.flightTime === "" && data.companys !== "" && data.orgAirports !=="" && data.planeSizes === "") {
+      } else if (
+        data.flightTime === "" &&
+        data.companys !== "" &&
+        data.orgAirports !== "" &&
+        data.planeSizes !== ""
+      ) {
         data.flights = data.flightss.filter((item: any) => {
           return (
             item.org_airport_name == data.orgAirports &&
-            item.airline_name == data.companys
+            item.airline_name == data.companys &&
+            item.plane_size == data.planeSizes
           );
         });
-      } else if(data.flightTime === "" && data.companys !== "" && data.orgAirports !=="" && data.planeSizes !== "") {
+      } else if (
+        data.flightTime === "" &&
+        data.companys !== "" &&
+        data.orgAirports === "" &&
+        data.planeSizes !== ""
+      ) {
+        data.flights = data.flightss.filter((item: any) => {
+          return (
+            item.airline_name == data.companys &&
+            item.plane_size == data.planeSizes
+          );
+        });
+      } else if (
+        data.flightTime === "" &&
+        data.companys === "" &&
+        data.orgAirports !== "" &&
+        data.planeSizes == ""
+      ) {
+        data.flights = data.flightss.filter((item: any) => {
+          return item.org_airport_name == data.orgAirports;
+        });
+      } else if (
+        data.flightTime === "" &&
+        data.companys == "" &&
+        data.orgAirports !== "" &&
+        data.planeSizes !== ""
+      ) {
         data.flights = data.flightss.filter((item: any) => {
           return (
             item.org_airport_name == data.orgAirports &&
-            item.airline_name == data.companys  &&
             item.plane_size == data.planeSizes
           );
         });
-      } else if(data.flightTime === "" && data.companys !== "" && data.orgAirports ==="" && data.planeSizes !== "") {
+      } else if (
+        data.flightTime === "" &&
+        data.companys === "" &&
+        data.orgAirports === "" &&
+        data.planeSizes !== ""
+      ) {
         data.flights = data.flightss.filter((item: any) => {
-          return (
-            item.airline_name == data.companys  &&
-            item.plane_size == data.planeSizes
-          );
-        });
-      } else if(data.flightTime === "" && data.companys === "" && data.orgAirports !=="" && data.planeSizes == "") {
-        data.flights = data.flightss.filter((item: any) => {
-          return (
-            item.org_airport_name == data.orgAirports
-          );
-        });
-      } else if(data.flightTime === "" && data.companys == "" && data.orgAirports !=="" && data.planeSizes !== "") {
-        data.flights = data.flightss.filter((item: any) => {
-          return (
-            item.org_airport_name == data.orgAirports &&
-            item.plane_size == data.planeSizes
-          );
-        });
-      } else if (data.flightTime === "" && data.companys === "" && data.orgAirports ==="" && data.planeSizes !== "") {
-        data.flights = data.flightss.filter((item: any) => {
-          return (
-            item.plane_size == data.planeSizes
-          );
+          return item.plane_size == data.planeSizes;
         });
       }
     };
@@ -525,12 +658,31 @@ export default defineComponent({
       company,
       watch,
       revoke,
+      choices,
     };
   },
 });
 </script>
 
 <style scoped lang='scss'>
+.chaxun {
+  padding: 10px 0;
+  align-items: center;
+}
+.date {
+  font-size: 12px;
+  color: #666;
+}
+.choice {
+  color: #fff;
+  display: block;
+  padding: 2px 10px;
+  background: orange;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
 /deep/.ant-select {
   margin-left: 10px;
   line-height: 28px;

@@ -11,7 +11,8 @@ const routes: Array<RouteRecordRaw> = [
     path: "/",
     name: "Layout",
     component: Layout,
-    children: [{
+    children: [
+    {
       path: '',
       name: 'Home',
       component: Home
@@ -60,6 +61,16 @@ const routes: Array<RouteRecordRaw> = [
       path: "/settlement",
       name: "Settlement",
       component: () => import('../views/settlement/Settlement.vue')
+    },
+    {
+      path: "/pickhotel",
+      name: "Pickhotel",
+      component: () => import("../views/pickhotel.vue")
+    },
+    {
+      path: "/create",
+      name: "Create",
+      component: () => import("../views/create/create.vue")
     },
     ]
   },

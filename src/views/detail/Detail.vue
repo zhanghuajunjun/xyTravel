@@ -31,7 +31,10 @@
         </div>
         <!-- 评论详情 -->
         <div>
-          <div class="comment">评论</div>
+          <div class="comment pos-re">
+            评论
+            <a-tag closable @close="log" class="pos-ab s" v-if="flag == true">回复 @{{name}}</a-tag>
+          </div>
           <!-- 评论框 -->
           <div class="el-textarea">
             <textarea
@@ -62,7 +65,7 @@
                 <img alt="example" style="width: 100%" :src="previewImage" />
               </a-modal>
             </div>
-            <a-button type="primary">提交</a-button>
+            <a-button type="primary" @click="postsComment">提交</a-button>
           </div>
           <!-- 评论详情 -->
           <div v-if="comment.length>0">
@@ -116,7 +119,7 @@
                       </div>
                     </div>
                     <div class="cmt-ctrl">
-                      <span class="huifu hover">回复</span>
+                      <span class="huifu hover" @click="postsCommentss(item)">回复</span>
                     </div>
                   </div>
                 </div>
@@ -192,6 +195,10 @@ interface HeaderItem {
   Authorization: string;
 }
 interface Data {
+  flag: boolean;
+  name: string;
+  follow: number;
+  id: number;
   detail: any;
   createdAt: string;
   createdTime: string;
@@ -213,6 +220,10 @@ export default defineComponent({
   components: { PlusOutlined, myTree },
   setup(props, ctx: SetupContext) {
     const data: Data = reactive<Data>({
+      flag: false,
+      name:'',
+      follow: 0,
+      id: 0,
       detail: [],
       createdAt: "",
       createdTime: "",
@@ -253,9 +264,10 @@ export default defineComponent({
         .getComments({
           post: Number(id),
           _limit: data.pageSize,
-          _start: data.current,
+          _start: data.current-1,
         })
         .then((res) => {
+          console.log(res);
           res.data.map((item: any) => {
             data.createdTime = item.updated_at;
             data.createdTime = dayjs(data.createdTime).format(
@@ -268,6 +280,49 @@ export default defineComponent({
           console.log(err);
         });
     };
+    const postsCommentss = (item: any): void => {
+      data.flag = true
+      data.id = item.id
+      data.name = item.account.nickname
+    };
+    // 提交评论
+    const postsComment = (): void => {
+      if (data.value === "") {
+        message.error("评论内容不能为空！");
+      } else {
+        if (data.follow === 0) {
+          api
+            .postComment({ content: data.value, pics: [], post: data.id })
+            .then((res: any) => {
+              console.log(res);
+              if (res.status == 0) {
+                message.success(res.message);
+                getComment(String(data.id));
+              } else {
+                message.error(res.message);
+              }
+            })
+            .catch((err) => {
+              console.log(err);
+            });
+        } else {
+          api
+            .postsComments({
+              content: data.value,
+              pics: [],
+              post: data.id,
+              follow: data.follow,
+            })
+            .then((res) => {
+              console.log(res);
+            })
+            .catch((err) => {
+              console.log(err);
+            });
+        }
+      }
+    };
+    
     const handleCancel = (): void => {
       data.previewVisible = false;
     };
@@ -280,21 +335,59 @@ export default defineComponent({
     };
     // 返回旅游攻略
     const travel = (): void => {
-      router.push("/travel")
+      router.push("/travel");
     };
     // 分享
     const share = (): void => {
-      message.warning('暂不支持该功能！')
+      message.warning("暂不支持该功能！");
     };
     // 改变页码
     const changeSize = (page: number, pageSize: number): void => {
       console.log(page);
       console.log(pageSize);
+      api
+        .getComments({
+          post: Number(data.id),
+          _limit: pageSize,
+          _start: (page-1)*pageSize,
+        })
+        .then((res) => {
+          console.log(res);
+          res.data.map((item: any) => {
+            data.createdTime = item.updated_at;
+            data.createdTime = dayjs(data.createdTime).format(
+              "YYYY-MM-DD HH:mm"
+            );
+          });
+          (data.total = res.total), (data.comment = res.data);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
     };
     // 改变页面条数
     const showSizeChange = (current: number, size: number): void => {
       console.log(current);
       console.log(size);
+      api
+        .getComments({
+          post: Number(data.id),
+          _limit: size,
+          _start: (current-1)*size,
+        })
+        .then((res) => {
+          console.log(res);
+          res.data.map((item: any) => {
+            data.createdTime = item.updated_at;
+            data.createdTime = dayjs(data.createdTime).format(
+              "YYYY-MM-DD HH:mm"
+            );
+          });
+          (data.total = res.total), (data.comment = res.data);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
     };
     // 点击相关推荐
     const recommendPost = (id: number): void => {
@@ -303,6 +396,7 @@ export default defineComponent({
     onMounted(() => {
       data.header.Authorization = "Bearer " + localStorage.getItem("token");
       const id: string = route.query.id! as string;
+      data.id = Number(id);
       getComment(id);
       getPostDetail(Number(id));
       api
@@ -320,6 +414,10 @@ export default defineComponent({
           console.log(err);
         });
     });
+    const log = (e: any): void => {
+      data.follow = 0
+      data.flag = false
+    }
     return {
       ...toRefs(data),
       handleCancel,
@@ -329,6 +427,9 @@ export default defineComponent({
       showSizeChange,
       travel,
       share,
+      postsComment,
+      postsCommentss,
+      log
     };
   },
 });
@@ -336,4 +437,8 @@ export default defineComponent({
 
 <style scoped lang='scss'>
 @import "../../style/detail/Detail.scss";
+.s {
+  left: 0;
+  top: 25px;
+}
 </style>

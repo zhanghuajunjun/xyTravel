@@ -21,7 +21,13 @@
     </div>
     <div class="content_right">
       <div class="search flex-j-sb">
-        <input type="text" placeholder="请输入想去的地方，比如:'广州'" class="input" />
+        <input
+          type="text"
+          placeholder="请输入想去的地方，比如:'广州'"
+          class="input"
+          v-model="value"
+          @keydown.enter="search"
+        />
         <SearchOutlined class="SearchOutlined" />
       </div>
       <div class="search_recommend">
@@ -34,7 +40,7 @@
         <div class="xxxx flex-a-c">推荐攻略</div>
         <button type="button" class="el-button">
           <EditOutlined />
-          <span class="marg-les">写游记</span>
+          <span class="marg-les" @click="create">写游记</span>
         </button>
         <div class="line"></div>
       </div>
@@ -113,19 +119,19 @@
         </div>
       </div>
       <div class="flex-j-c marg-tops">
-          <a-pagination
-            :page-size-options="pageSizeOptions"
-            :total="total"
-            show-size-changer
-            show-quick-jumper
-            v-model:current="current"
-            v-model:pageSize="pageSize"
-            :show-total="total => `共 ${total} 条`"
-          >
-            <template v-slot:buildOptionText="props">
-              <span>{{ props.value }}条/页</span>
-            </template>
-          </a-pagination>
+        <a-pagination
+          :page-size-options="pageSizeOptions"
+          :total="total"
+          show-size-changer
+          show-quick-jumper
+          v-model:current="current"
+          v-model:pageSize="pageSize"
+          :show-total="total => `共 ${total} 条`"
+        >
+          <template v-slot:buildOptionText="props">
+            <span>{{ props.value }}条/页</span>
+          </template>
+        </a-pagination>
       </div>
     </div>
   </div>
@@ -141,7 +147,7 @@ import {
 } from "vue";
 import api from "@/http/api";
 import { Res, ResItem } from "./Travel";
-import { useRouter } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
 interface Data {
   citiesList: ResItem[];
   total: number;
@@ -149,6 +155,7 @@ interface Data {
   pageSizeOptions: string[];
   current: number;
   pageSize: number;
+  value: string;
 }
 export default defineComponent({
   name: "",
@@ -157,6 +164,7 @@ export default defineComponent({
   setup(props, ctx: SetupContext) {
     const data: Data = reactive<Data>({
       citiesList: [],
+      value: "",
       total: 0,
       postsList: [],
       pageSizeOptions: ["3", "5", "10", "15"],
@@ -164,12 +172,28 @@ export default defineComponent({
       current: 1,
     });
     const router = useRouter();
+    const route = useRoute();
     const personal = (): void => {
       router.push("/user/personal");
     };
     const postsDetail = (id: number): void => {
       router.push({ path: "/detail", query: { id: id } });
     };
+    const search = (): void => {
+      api
+          .getpost(data.value)
+          .then((res: any) => {
+            console.log(res);
+            data.total = res.total;
+            data.postsList = res.data;
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+    };
+    const create = (): void =>{
+      router.push("/create")
+    }
     onMounted(() => {
       api
         .getCities()
@@ -179,21 +203,37 @@ export default defineComponent({
         .catch((err) => {
           console.log(err);
         });
-      api
-        .getPosts()
-        .then((res: any) => {
-          console.log(res);
-          data.total = res.total;
-          data.postsList = res.data;
-        })
-        .catch((err) => {
-          console.log(err);
-        });
+      if (route.params.msgs) {
+        data.value = route.params.msgs! as string;
+        api
+          .getpost(data.value)
+          .then((res: any) => {
+            console.log(res);
+            data.total = res.total;
+            data.postsList = res.data;
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+      } else {
+        api
+          .getPosts()
+          .then((res: any) => {
+            console.log(res);
+            data.total = res.total;
+            data.postsList = res.data;
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+      }
     });
     return {
       ...toRefs(data),
       personal,
       postsDetail,
+      search,
+      create,
     };
   },
 });
