@@ -4,7 +4,7 @@
       <div class="logo">
         <img src="http://157.122.54.189:9093/images/logo.jpg" alt style="width:156px" />
       </div>
-      <div class="padd-lres nav d-flex">
+      <div class="padd-lres nav ">
         <div
           class="padd-lres nav_item hover"
           v-for="(item,index) in arr"

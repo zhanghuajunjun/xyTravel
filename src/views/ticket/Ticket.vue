@@ -30,7 +30,9 @@
               @change="handleChange1"
               class="picker"
             >
-              <a-select-option v-for="d in data1" :key="d.sortName">{{ d.name }}</a-select-option>
+              <a-select-option v-for="d in data1" :key="d.sortName">{{
+                d.name
+              }}</a-select-option>
             </a-select>
           </div>
           <div class="marg-topss">
@@ -48,7 +50,9 @@
               @change="handleChange2"
               class="picker"
             >
-              <a-select-option v-for="d in data2" :key="d.sortName">{{ d.name }}</a-select-option>
+              <a-select-option v-for="d in data2" :key="d.sortName">{{
+                d.name
+              }}</a-select-option>
             </a-select>
           </div>
           <div class="marg-topss">
@@ -79,28 +83,26 @@
     </div>
     <div data-v-4b1fa026 class="statement el-row el-row--flex">
       <div data-v-4b1fa026 class="el-col el-col-8">
-        <ReadFilled style="color: rgb(64, 158, 255);font-size:20px" />
+        <ReadFilled style="color: rgb(64, 158, 255); font-size: 20px" />
         <span data-v-4b1fa026>100%航协认证</span>
       </div>
       <div data-v-4b1fa026 class="el-col el-col-8">
-        <SafetyCertificateFilled style="color: green;font-size:20px" />
+        <SafetyCertificateFilled style="color: green; font-size: 20px" />
         <span data-v-4b1fa026>出行保证</span>
       </div>
       <div data-v-4b1fa026 class="el-col el-col-8">
-        <PhoneFilled style="color: rgb(64, 158, 255);font-size:20px" />
+        <PhoneFilled style="color: rgb(64, 158, 255); font-size: 20px" />
         <span data-v-4b1fa026>7x24小时服务</span>
       </div>
     </div>
-    <div class="special">
-      <TwitterCircleFilled />特价机票
-    </div>
+    <div class="special"><TwitterCircleFilled />特价机票</div>
     <div class="paddes flex-j-sb air-sale">
       <div v-for="item in specialTicket" :key="item.id">
         <div class="pos-re hover" @click="chooseAir(item)">
           <img :src="specialTicket[0].cover" alt class="specialImg" />
           <div class="layer-bar flex-j-sa">
-            <span>{{item.departCity}}-{{item.destCity}}</span>
-            <span>￥{{item.price}}</span>
+            <span>{{ item.departCity }}-{{ item.destCity }}</span>
+            <span>￥{{ item.price }}</span>
           </div>
         </div>
       </div>
@@ -144,7 +146,7 @@ export default {
       },
       departDate: "",
       disabledDate(current: any) {
-        return current && current <= moment().subtract("day",1);
+        return current && current <= moment().subtract("day", 1);
       },
     });
     const router = useRouter();
@@ -184,11 +186,15 @@ export default {
         });
     };
     const handleChange2 = (value: any): void => {
-      data.obj.destCode = value.substring(0, value.indexOf("-"));
-      data.obj.destCity = value.substring(
-        value.indexOf("-") + 1,
-        value.length - 1
-      );
+      if (data.obj.destCity == data.obj.departCity) {
+        message.warning("出发和到达城市不能一样");
+      } else {
+        data.obj.destCode = value.substring(0, value.indexOf("-"));
+        data.obj.destCity = value.substring(
+          value.indexOf("-") + 1,
+          value.length - 1
+        );
+      }
     };
     const onChangeDate = (value: string): void => {
       data.obj.departDate = dayjs(value).format("YYYY-MM-DD");
@@ -197,8 +203,8 @@ export default {
       message.warning("暂不支持往返机票！");
     };
     const exchange = (): void => {
-      const val1 = data.value1;
-      const val2 = data.value2;
+      const val1 = data.obj.departCity;
+      const val2 = data.obj.destCity;
       data.value2 = val1;
       data.value1 = val2;
     };
@@ -223,7 +229,7 @@ export default {
               item.destCity == data.obj.destCity
             );
           });
-          if(ass.length === 0) {
+          if (ass.length === 0) {
             arr.push(data.obj);
           }
         } else {

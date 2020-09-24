@@ -20,7 +20,7 @@
       <img src="http://157.122.54.189:9093/images/pic_sea.jpeg" alt class="img_left" />
     </div>
     <div class="content_right">
-      <div class="search flex-j-sb">
+      <div class="search1 flex-j-sb">
         <input
           type="text"
           placeholder="请输入想去的地方，比如:'广州'"
@@ -50,10 +50,10 @@
         :key="index"
       >
         <div v-if="item.images.length==1" class="d-flex">
-          <div v-for="(item1,index1) in item.images" :key="index1" class="marg-ries">
-            <img :src="item1" class="images" />
+          <div v-for="(item1,index1) in item.images" :key="index1" class="marg-ries image-wai">
+            <img :src="item1" class="images hvr-grow" />
           </div>
-          <div>
+          <div class="left-msg">
             <div class="title" @click="postsDetail(item.id)">{{item.title}}</div>
             <p class="post-desc">{{item.summary}}</p>
             <div class="flex-j-sb marg-tops flex-a-c">
@@ -86,9 +86,9 @@
         <div v-else>
           <div class="title" @click="postsDetail(item.id)">{{item.title}}</div>
           <p class="post-desc">{{item.summary}}</p>
-          <div class="d-flex" v-if="item.images.length>0">
-            <div v-for="(item1,index1) in item.images.slice(0,3)" :key="index1">
-              <img :src="item1" class="images" :class="index1 == 1?'marg-lre':''" />
+          <div class=" flex-j-sb" v-if="item.images.length>0">
+            <div class="image-wai" v-for="(item1,index1) in item.images.slice(0,3)" :key="index1">
+              <img :src="item1" class="images hvr-grow " :class="index1 == 1?'marg-lre':''" />
             </div>
           </div>
           <div class="flex-j-sb marg-tops flex-a-c">

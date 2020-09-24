@@ -72,7 +72,7 @@ i {
   width: 700px;
 }
 
-.search {
+.search1 {
   width: 700px;
   height: 40px;
   border: 3px solid orange;
@@ -161,10 +161,15 @@ i {
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
 }
-
+.image-wai {
+  width: 220px;
+  height: 150px;
+  overflow: hidden;
+}
 .images {
   width: 220px;
   height: 150px;
+  object-fit: cover;
 }
 .account_img {
   width: 16px;
@@ -175,9 +180,18 @@ i {
 .padd-tbes {
   border-bottom: 1px solid #dddddd;
 }
+.padd-tbes:hover .hvr-grow {
+  transform: scale(1.2);
+}
+.padd-tbes:hover .title{
+  color: orange;
+}
 .orange {
   color: orange;
 }
 .fsse {
   font-size: 12px;
+}
+.left-msg{
+  width: 65%;
 }

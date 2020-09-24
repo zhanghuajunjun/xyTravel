@@ -195,6 +195,7 @@ interface HeaderItem {
   Authorization: string;
 }
 interface Data {
+  token: string;
   flag: boolean;
   name: string;
   follow: number;
@@ -221,6 +222,7 @@ export default defineComponent({
   setup(props, ctx: SetupContext) {
     const data: Data = reactive<Data>({
       flag: false,
+      token: "",
       name:'',
       follow: 0,
       id: 0,
@@ -287,6 +289,10 @@ export default defineComponent({
     };
     // 提交评论
     const postsComment = (): void => {
+      if (data.token == null) {
+        message.warning("系统检测到你未登录，请先登录");
+        router.push("/user/login");
+      } else {
       if (data.value === "") {
         message.error("评论内容不能为空！");
       } else {
@@ -320,9 +326,8 @@ export default defineComponent({
               console.log(err);
             });
         }
-      }
+      }}
     };
-    
     const handleCancel = (): void => {
       data.previewVisible = false;
     };
@@ -330,7 +335,6 @@ export default defineComponent({
       console.log(file);
     };
     const handleChange = (a: any, b: any, c: any): void => {
-      // data.fileList = fileList;
       console.log(a, b, c);
     };
     // 返回旅游攻略
@@ -394,6 +398,7 @@ export default defineComponent({
       getPostDetail(id);
     };
     onMounted(() => {
+      data.token = localStorage.getItem("token")!;
       data.header.Authorization = "Bearer " + localStorage.getItem("token");
       const id: string = route.query.id! as string;
       data.id = Number(id);

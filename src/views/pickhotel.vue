@@ -66,13 +66,37 @@
                       <span>龙泉驿区音乐广场</span>
                       <span>0.87公里</span>
                     </div>
+                    <div class="jiu_p">
+                      <span>巴金纪念馆</span>
+                      <span>1.33公里</span>
+                    </div>
+                    <div class="jiu_p">
+                      <span>牛王庙</span>
+                      <span>0.36公里</span>
+                    </div>
+                    <div class="jiu_p">
+                      <span>大象门</span>
+                      <span>0.87公里</span>
+                    </div>
+                    <div class="jiu_p">
+                      <span>桃花仙子</span>
+                      <span>1.5公里</span>
+                    </div>
+                    <div class="jiu_p">
+                      <span>中天法治广场</span>
+                      <span>2.04公里</span>
+                    </div>
                   </div>
                 </a-tab-pane>
                 <a-tab-pane key="2" tab="交通" force-render>
                   <div class="jiu_o">
                     <div class="jiu_p">
-                      <span>龙泉驿区音乐广场</span>
-                      <span>0.87公里</span>
+                      <span>龙泉驿区汽车总站</span>
+                      <span>0.23公里</span>
+                    </div>
+                    <div class="jiu_p">
+                      <span>龙泉驿（地铁站）</span>
+                      <span>0.86公里</span>
                     </div>
                   </div>
                 </a-tab-pane>

@@ -1,5 +1,5 @@
 import service from './index'
-const token = localStorage.getItem('token')!
+const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MjEsImlhdCI6MTYwMDkxNjExNCwiZXhwIjoxNjAzNTA4MTE0fQ.gJKa8bRcx3WA5rDlsdyE50zB-jAnraKDvYQjV47nKeM"
 console.log(token);
 export default {
   // 获取轮播图
@@ -50,6 +50,16 @@ export default {
   postComment({ content, pics, post }: { content: string; pics: any; post: number }) {
     return service.post(`comments`, {
       content, pics, post
+    }, {
+      headers: {
+        Authorization: "Bearer " + token
+      }
+    })
+  },
+  // 新增文章
+  addposts({content,title,city}: {content: any; title: string;city: Number}) {
+    return service.post(`posts`, {
+      content,title,city
     }, {
       headers: {
         Authorization: "Bearer " + token
